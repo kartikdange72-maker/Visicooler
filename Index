@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Visi Cooler Audit Report</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+<style>
+body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:#f3f6fb;color:#1f2937}
+.container{width:92%;margin:auto;padding:30px}
+.hero{background:linear-gradient(135deg,#0b2f5b,#0074c8);color:white;padding:34px;border-radius:22px;box-shadow:0 12px 30px rgba(0,0,0,.18)}
+.hero h1{margin:0;font-size:38px}
+.hero p{margin:8px 0 0;opacity:.9}
+
+.section,.tree-section{background:white;border-radius:20px;padding:24px;margin-bottom:24px;box-shadow:0 8px 22px rgba(0,0,0,.07)}
+.tree-section{padding:28px;margin:25px 0}
+h2{margin-top:0;color:#0b2f5b;font-size:24px}
+
+.conclusion-box{
+    background:linear-gradient(135deg,#fff7ed,#eff6ff);
+    border:1px solid #fed7aa;
+    border-left:8px solid #f59e0b;
+    border-radius:20px;
+    padding:24px;
+    margin-bottom:24px;
+    box-shadow:0 8px 22px rgba(0,0,0,.06);
+}
+.conclusion-box h2{color:#9a3412}
+.conclusion-box p{font-size:16px;line-height:1.6;margin:0;color:#374151}
+
+.tree{display:flex;flex-direction:column;align-items:center}
+.tree-node{background:#f8fbff;border:2px solid #dbeafe;border-radius:18px;padding:16px 26px;text-align:center;min-width:220px;box-shadow:0 8px 18px rgba(15,23,42,.08)}
+.tree-node .label{font-size:14px;color:#64748b;font-weight:700}
+.tree-node .value{font-size:34px;font-weight:900;color:#0b2f5b}
+.tree-line{width:2px;height:26px;background:#94a3b8}
+.tree-children{display:flex;justify-content:center;gap:28px;position:relative}
+.tree-children:before{content:"";position:absolute;top:-13px;left:50%;transform:translateX(-50%);width:72%;height:2px;background:#94a3b8}
+.tree-child{display:flex;flex-direction:column;align-items:center}
+.tree-child:before{content:"";width:2px;height:13px;background:#94a3b8}
+.node-blue{border-top:6px solid #0b2f5b}.node-green{border-top:6px solid #16a34a}.node-red{border-top:6px solid #dc2626}.node-orange{border-top:6px solid #f59e0b}
+
+.section-title{background:#0b2f5b;color:white;padding:18px 24px;border-radius:18px;margin:34px 0 20px;font-size:26px;font-weight:700}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.grid-chart-info{display:grid;grid-template-columns:68% 32%;gap:22px;align-items:stretch}
+.grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
+
+.chart-box{background:#f8fbff;padding:16px;border-radius:18px;border:1px solid #e1e8f0;height:320px}
+.chart-box.small{height:255px}.chart-box.medium{height:300px}.chart-box.large{height:380px}
+
+.info-panel{
+    background:#f8fbff;
+    border:1px solid #dbeafe;
+    border-radius:18px;
+    padding:18px;
+}
+.info-panel h3{margin:0 0 12px;color:#0b2f5b;font-size:20px}
+.info-panel ul{padding-left:18px;margin:0}
+.info-panel li{margin-bottom:10px;line-height:1.45;font-size:15px}
+
+.town-card{background:#f8fbff;border:1px solid #dbeafe;border-radius:18px;padding:18px}
+.town-card h3{margin:0 0 12px;color:#0b2f5b;font-size:20px}
+.town-chart{height:230px}
+
+.insight{margin-top:15px;padding:15px;border-radius:14px;background:#fff7e6;border-left:6px solid #f59e0b;font-size:15px;line-height:1.5}
+.risk{background:#fff1f2;border-left-color:#dc2626}.good{background:#ecfdf5;border-left-color:#16a34a}
+
+/* Creative VC Cooler Rack View */
+.cooler-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:22px}
+.cooler-card{background:#f8fbff;border:1px solid #dbeafe;border-radius:20px;padding:18px;box-shadow:0 8px 18px rgba(15,23,42,.06)}
+.cooler-card h3{margin:0 0 14px;color:#0b2f5b}
+.cooler{
+    background:linear-gradient(180deg,#e0f2fe,#f8fafc);
+    border:5px solid #334155;
+    border-radius:22px;
+    padding:14px;
+    min-height:320px;
+    position:relative;
+    box-shadow:inset 0 0 18px rgba(15,23,42,.12);
+}
+.cooler:before{
+    content:"";
+    position:absolute;
+    top:8px;
+    left:50%;
+    transform:translateX(-50%);
+    width:60px;
+    height:7px;
+    background:#94a3b8;
+    border-radius:999px;
+}
+.shelf{
+    background:white;
+    border:1px solid #cbd5e1;
+    border-radius:12px;
+    margin:12px 0;
+    padding:10px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    box-shadow:0 4px 12px rgba(15,23,42,.06);
+}
+.shelf-label{font-weight:900;color:#0f172a}
+.shelf-count{font-weight:900;background:#0b2f5b;color:white;border-radius:999px;padding:5px 12px}
+.shelf.multi .shelf-count{background:#8b5cf6}
+.shelf.zero{opacity:.35}
+
+.audit-view{margin-top:34px}
+.audit-header{background:linear-gradient(135deg,#1d4ed8,#6d28d9);color:white;padding:22px;border-radius:20px 20px 0 0}
+.audit-header h2{margin:0;font-size:26px;color:white}
+.audit-header p{margin:6px 0 0;opacity:.9}
+.audit-body{background:white;padding:18px;border-radius:0 0 20px 20px;box-shadow:0 8px 22px rgba(0,0,0,.07)}
+.filter-bar{display:grid;grid-template-columns:1fr 1fr auto;gap:12px;margin-bottom:18px}
+select,.btn{border:1px solid #cbd5e1;border-radius:999px;padding:11px 14px;font-size:14px;outline:none}
+.btn{border:none;background:#dc2626;color:white;font-weight:800;cursor:pointer}
+.gallery{display:grid;grid-template-columns:1fr;gap:18px}
+.photo-card{display:grid;grid-template-columns:52% 48%;background:#fff;border:1px solid #e5e7eb;border-radius:18px;overflow:hidden;box-shadow:0 8px 22px rgba(15,23,42,.08)}
+.image-wrap{background:#f1f5f9;min-height:440px;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer}
+.image-wrap img{max-width:100%;max-height:440px;object-fit:contain}
+.cavins-tag{position:absolute;top:14px;left:14px;padding:10px 16px;border-radius:999px;color:white;font-weight:900;background:#16a34a;z-index:2}
+.cavins-tag.no{background:#dc2626}.cavins-tag.na{background:#64748b}
+.info-side{padding:20px;background:linear-gradient(180deg,#ffffff,#f8fbff)}
+.outlet-title{font-size:22px;font-weight:900;color:#111827;margin-bottom:16px}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.info-box{background:#eef2ff;border:1px solid #dbeafe;border-radius:12px;padding:12px;color:#1e3a8a;font-size:15px}
+.info-box strong{display:block;font-size:12px;text-transform:uppercase;color:#312e81;margin-bottom:5px}
+.no-image{color:#64748b;font-weight:800}
+.footer{text-align:center;color:#64748b;font-size:13px;padding:20px}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:9999;align-items:center;justify-content:center}
+.modal.active{display:flex}
+.modal img{max-width:92vw;max-height:88vh;object-fit:contain;border-radius:12px}
+.close-btn{position:absolute;top:20px;right:24px;background:white;border:none;width:42px;height:42px;border-radius:50%;font-size:24px;cursor:pointer}
+
+@media(max-width:1000px){
+.tree-children{flex-direction:column;gap:18px}
+.tree-children:before{display:none}
+.photo-card{grid-template-columns:1fr}
+.filter-bar{grid-template-columns:1fr}
+.grid-chart-info{grid-template-columns:1fr}
+}
+@media(max-width:900px){.grid-2{grid-template-columns:1fr}}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="hero">
+<h1>Visi Cooler Audit Report</h1>
+<p>Retail visibility, Cavin’s cooler placement, facing quality and competitive pressure analysis</p>
+</div>
+
+<div class="tree-section">
+<h2>Audit Outlet Hierarchy</h2>
+<div class="tree">
+<div class="tree-node node-blue"><div class="label">Total Verified Outlets</div><div class="value">127</div></div>
+<div class="tree-line"></div>
+<div class="tree-children">
+<div class="tree-child">
+<div class="tree-node node-green"><div class="label">Open Outlets</div><div class="value">103</div></div>
+<div class="tree-line"></div>
+<div class="tree-children">
+<div class="tree-child">
+<div class="tree-node node-orange"><div class="label">VC Cooler Outlets</div><div class="value">99</div></div>
+<div class="tree-line"></div>
+<div class="tree-children">
+<div class="tree-child"><div class="tree-node node-green"><div class="label">Cavin’s Present in VC</div><div class="value">62</div></div></div>
+<div class="tree-child"><div class="tree-node node-red"><div class="label">Cavin’s Not Present in VC</div><div class="value">37</div></div></div>
+</div>
+</div>
+<div class="tree-child"><div class="tree-node node-red"><div class="label">Non-VC Cooler Outlets</div><div class="value">4</div></div></div>
+</div>
+</div>
+<div class="tree-child"><div class="tree-node node-red"><div class="label">Closed / Doesn’t Exist</div><div class="value">24</div></div></div>
+</div>
+</div>
+</div>
+
+<div class="conclusion-box">
+  <h2>Conclusion</h2>
+
+  <p><b>Q1. Was Cavin’s visible inside visi coolers?</b><br>
+  <b>Ans:</b> Out of <b>127 verified outlets</b>, <b>103 outlets were open</b>. Among these, <b>99 outlets had visi coolers</b>. Cavin’s was present in <b>62 out of 99 visi cooler outlets</b>, while Cavin’s was not present in <b>37 outlets</b>.</p>
+
+  <p><b>Q2. How was Cavin’s facing visibility?</b><br>
+  <b>Ans:</b> Among the <b>62 Cavin’s-present outlets</b>, <b>24 outlets had below 3 facings</b>, <b>23 outlets had 3–5 facings</b>, <b>13 outlets had 6–9 facings</b>, and only <b>2 outlets had above 10 facings</b>.</p>
+
+  <p><b>Q3. How was Cavin’s rack placement?</b><br>
+  <b>Ans:</b> Cavin’s placement was highest on <b>Rack 1 with 19 outlets</b>, followed by <b>Rack 2 with 16 outlets</b>, <b>Rack 3 with 12 outlets</b>, and <b>Rack 4 with 8 outlets</b>. Multi-rack placement was limited: <b>Rack 1,2 had 3 outlets</b>, <b>Rack 1,3 had 1 outlet</b>, <b>Rack 1,3,4 had 1 outlet</b>, and <b>Rack 2,4 had 1 outlet</b>.</p>
+
+  <p><b>Q4. What is the overall conclusion?</b><br>
+  <b>Ans:</b> Cavin’s was present in <b>62 cooler outlets</b>, but visibility strength was mixed. A large share of outlets had lower facing depth, with <b>24 outlets below 3 facings</b>. Rack placement was concentrated mainly on single racks, especially <b>Rack 1 and Rack 2</b>, while multi-rack visibility was seen only in a few outlets.</p>
+</div>
+
+<div class="section">
+<h2>Town-wise Verification Summary</h2>
+<div class="grid-2">
+<div class="chart-box medium"><canvas id="townChart"></canvas></div>
+<div>
+<div class="insight good">Pondicherry has the highest verified outlet base at <b>46 outlets</b>, followed by Madurai at <b>31</b> and Coimbatore at <b>28</b>.</div>
+</div>
+</div>
+</div>
+
+<div class="section-title">Section 1: Cavin’s Present Shops</div>
+
+<div class="section">
+<h2>Facing Analysis - Cavin’s Present Outlets</h2>
+<div class="grid-2">
+<div class="chart-box medium"><canvas id="facingSlabChart"></canvas></div>
+<div class="chart-box medium"><canvas id="avgFacingChart"></canvas></div>
+</div>
+<div class="insight risk"><b>Visibility Gap:</b> 24 out of 62 Cavin’s-present outlets have below 3 facings.</div>
+</div>
+
+<div class="section">
+<h2>Facing Slab Breakdown by Town</h2>
+<div class="grid-3">
+<div class="town-card"><h3>Chennai</h3><div class="town-chart"><canvas id="chennaiFacingChart"></canvas></div></div>
+<div class="town-card"><h3>Coimbatore</h3><div class="town-chart"><canvas id="coimbatoreFacingChart"></canvas></div></div>
+<div class="town-card"><h3>Madurai</h3><div class="town-chart"><canvas id="maduraiFacingChart"></canvas></div></div>
+<div class="town-card"><h3>Pondicherry</h3><div class="town-chart"><canvas id="pondicherryFacingChart"></canvas></div></div>
+<div class="town-card"><h3>Salem</h3><div class="town-chart"><canvas id="salemFacingChart"></canvas></div></div>
+</div>
+</div>
+
+<div class="section">
+<h2>Rack Placement Breakdown by Town</h2>
+<div class="cooler-grid" id="coolerRackGrid"></div>
+</div>
+
+<div class="section">
+<h2>Visi Cooler Company Ownership</h2>
+<div class="grid-chart-info">
+<div class="chart-box large"><canvas id="companyChart"></canvas></div>
+<div class="info-panel">
+<h3>Reading</h3>
+<ul>
+<li>Coke has the largest cooler ownership count at <b>23</b>.</li>
+<li>Pepsi follows with <b>17</b> coolers.</li>
+<li>Western, 7Up and Campa form the next major block.</li>
+<li>This means Cavin’s visibility depends heavily on winning space inside competitor-controlled coolers.</li>
+</ul>
+</div>
+</div>
+</div>
+
+<div class="section">
+<h2>Top Competition Brands Where Cavin’s is Present</h2>
+<div class="grid-chart-info">
+<div class="chart-box large"><canvas id="competitionPresentChart"></canvas></div>
+<div class="info-panel">
+<h3>Reading</h3>
+<ul>
+<li>7Up leads with <b>21</b> observations.</li>
+<li>Coca Cola, Slice, Maaza and Pepsi are also strong.</li>
+<li>Cavin’s is present, but competitor clutter remains high.</li>
+<li>Presence alone is not enough unless Cavin’s secures better facings.</li>
+</ul>
+</div>
+</div>
+</div>
+
+<div class="section">
+<h2>Category Brand Presence - Cavin’s Present Shops</h2>
+<div class="grid-chart-info">
+<div class="chart-box large"><canvas id="categoryPresentChart"></canvas></div>
+<div class="info-panel">
+<h3>Reading</h3>
+<ul>
+<li>Frooti leads category presence with <b>14</b>.</li>
+<li>Smoothie and Winkin both appear in <b>11</b> cases.</li>
+<li>Maaza and Slice remain strong competing fruit beverage brands.</li>
+<li>This indicates Cavin’s is competing in a crowded chilled beverage set.</li>
+</ul>
+</div>
+</div>
+</div>
+
+<div class="section-title">Section 2: Cavin’s Not Present Shops</div>
+
+<div class="section">
+<h2>Cavin’s Not Present - Reasons</h2>
+<div class="grid-chart-info">
+<div class="chart-box small"><canvas id="reasonChart"></canvas></div>
+<div class="info-panel">
+<h3>Reading</h3>
+<ul>
+<li>Product / stock not available is the largest reason with <b>16</b> cases.</li>
+<li>Salesman not coming is the second issue with <b>8</b> cases.</li>
+<li>This is primarily an execution and supply issue.</li>
+</ul>
+</div>
+</div>
+</div>
+
+<div class="section">
+<h2>Competition Present in Non-Cavin’s Shops</h2>
+<div class="grid-chart-info">
+<div class="chart-box large"><canvas id="competitionAbsentChart"></canvas></div>
+<div class="info-panel">
+<h3>Reading</h3>
+<ul>
+<li>Pepsi leads in Cavin’s-not-present shops with <b>15</b>.</li>
+<li>7Up, Sprite and Slice are also strongly present.</li>
+<li>These are not weak outlets; competitors are already active here.</li>
+<li>This creates a direct recovery opportunity for Cavin’s.</li>
+</ul>
+</div>
+</div>
+</div>
+
+<div class="section">
+<h2>Category Competition - Cavin’s Not Present Shops</h2>
+<div class="grid-chart-info">
+<div class="chart-box large"><canvas id="categoryAbsentChart"></canvas></div>
+<div class="info-panel">
+<h3>Reading</h3>
+<ul>
+<li>Maaza leads category competition with <b>9</b>.</li>
+<li>Slice follows with <b>6</b>.</li>
+<li>Boost and Frooti are present in <b>4</b> cases each.</li>
+<li>These outlets should be treated as potential re-entry points.</li>
+</ul>
+</div>
+</div>
+</div>
+
+<div class="audit-view">
+<div class="audit-header">
+<h2><i class="fa-solid fa-snowflake"></i> VC Cooler Shelf Photo Review</h2>
+<p>Filter by Cavin’s presence and town. Showing outlet type, RTR code, outlet name, town and photo only.</p>
+</div>
+
+<div class="audit-body">
+<div id="loader" style="font-weight:800;color:#475569;margin-bottom:15px;">Loading Google Sheet data...</div>
+<div id="app" style="display:none;">
+<div class="filter-bar">
+<select id="cavinsFilter" onchange="applyFilters()">
+<option value="">All Cavin’s Status</option>
+<option value="yes">Cavin’s Yes</option>
+<option value="no">Cavin’s No</option>
+</select>
+<select id="townFilter" onchange="applyFilters()"><option value="">All Towns</option></select>
+<button class="btn" onclick="resetFilters()">Reset</button>
+</div>
+<div id="gallery" class="gallery"></div>
+</div>
+</div>
+</div>
+
+<div class="footer">Visi Cooler Audit Report | Prepared for Business Review</div>
+</div>
+
+<div id="imageModal" class="modal">
+<button class="close-btn" onclick="closeImageModal()">&times;</button>
+<img id="modalImage" src="">
+</div>
+
+<script>
+Chart.register(ChartDataLabels);
+
+const blue='#0074c8',darkBlue='#0b2f5b',red='#dc2626',green='#16a34a',orange='#f59e0b',sky='#38bdf8',purple='#8b5cf6',teal='#14b8a6',pink='#ec4899',slate='#64748b',yellow='#eab308';
+
+function verticalBarChart(id,labels,data,label,colors){
+new Chart(document.getElementById(id),{
+type:'bar',
+data:{labels,datasets:[{label,data,backgroundColor:colors||blue,borderRadius:8,barThickness:30}]},
+options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:24,right:12,left:10,bottom:8}},plugins:{legend:{display:false},datalabels:{anchor:'end',align:'top',offset:4,clamp:true,color:'#111827',font:{weight:'bold',size:11},formatter:v=>v===0?'':v}},scales:{x:{ticks:{color:'#374151',font:{size:11},autoSkip:false,maxRotation:35},grid:{display:false}},y:{beginAtZero:true,suggestedMax:Math.max(...data)+5,ticks:{color:'#374151',font:{size:11},precision:0},grid:{color:'#e5e7eb'}}}}
+});
+}
+
+function smallTownChart(id,labels,data,colors){
+new Chart(document.getElementById(id),{
+type:'bar',
+data:{labels,datasets:[{data,backgroundColor:colors,borderRadius:8,barThickness:26}]},
+options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:24,right:10,left:8,bottom:4}},plugins:{legend:{display:false},datalabels:{anchor:'end',align:'top',color:'#111827',font:{weight:'bold',size:11},formatter:v=>v===0?'':v}},scales:{x:{ticks:{font:{size:10},autoSkip:false,maxRotation:35},grid:{display:false}},y:{beginAtZero:true,suggestedMax:Math.max(...data)+3,ticks:{precision:0,font:{size:10}},grid:{color:'#e5e7eb'}}}}
+});
+}
+
+verticalBarChart('townChart',['Chennai','Coimbatore','Madurai','Pondicherry','Salem'],[12,28,31,46,10],'Verified Outlets',[darkBlue,blue,sky,orange,green]);
+verticalBarChart('facingSlabChart',['Below 3','3-5','6-9','Above 10'],[24,23,13,2],'Outlet Count',[red,orange,blue,green]);
+verticalBarChart('avgFacingChart',['Chennai','Coimbatore','Madurai','Pondicherry','Salem'],[5,4,2,4,3],'Average Facing',[darkBlue,blue,red,orange,green]);
+
+smallTownChart('chennaiFacingChart',['3-5','6-9','Above 10','Below 3'],[3,3,0,1],[orange,blue,green,red]);
+smallTownChart('coimbatoreFacingChart',['3-5','6-9','Above 10','Below 3'],[5,2,1,9],[orange,blue,green,red]);
+smallTownChart('maduraiFacingChart',['3-5','6-9','Above 10','Below 3'],[1,0,0,7],[orange,blue,green,red]);
+smallTownChart('pondicherryFacingChart',['3-5','6-9','Above 10','Below 3'],[13,8,1,7],[orange,blue,green,red]);
+smallTownChart('salemFacingChart',['3-5','6-9','Above 10','Below 3'],[1,0,0,0],[orange,blue,green,red]);
+
+const rackData={
+'Chennai':{'1':1,'2':2,'3':2,'4':1,'5':0,'1,2':0,'1,3':0,'1,3,4':0,'2,4':1},
+'Coimbatore':{'1':5,'2':4,'3':3,'4':3,'5':1,'1,2':0,'1,3':0,'1,3,4':1,'2,4':0},
+'Madurai':{'1':3,'2':3,'3':1,'4':1,'5':0,'1,2':0,'1,3':0,'1,3,4':0,'2,4':0},
+'Pondicherry':{'1':10,'2':7,'3':6,'4':3,'5':0,'1,2':2,'1,3':1,'1,3,4':0,'2,4':0},
+'Salem':{'1':0,'2':0,'3':0,'4':0,'5':0,'1,2':1,'1,3':0,'1,3,4':0,'2,4':0}
+};
+
+function renderCoolers(){
+const container=document.getElementById('coolerRackGrid');
+container.innerHTML=Object.entries(rackData).map(([town,data])=>{
+const shelves=Object.entries(data).map(([rack,count])=>`
+<div class="shelf ${count===0?'zero':''} ${rack.includes(',')?'multi':''}">
+<span class="shelf-label">Rack ${rack}</span>
+<span class="shelf-count">${count}</span>
+</div>`).join('');
+return `<div class="cooler-card"><h3>${town}</h3><div class="cooler">${shelves}</div></div>`;
+}).join('');
+}
+renderCoolers();
+
+verticalBarChart('companyChart',['Coke','Pepsi','Western','7Up','Campa','Sprite','Blue Star','Frigoglass','Others'],[23,17,14,11,11,8,3,2,10],'Fridge Company Count',[red,blue,slate,green,orange,sky,purple,teal,pink]);
+verticalBarChart('competitionPresentChart',['7Up','Coca Cola','Slice','Maaza','Pepsi','Bovonto','Sprite','Smoodh','Fanta','Cavin’s'],[21,17,16,13,13,12,12,11,9,9],'Brand Count',[green,red,orange,sky,blue,purple,teal,pink,slate,darkBlue]);
+verticalBarChart('categoryPresentChart',['Frooti','Smoothie','Winkin','Maaza','Slice','Boost','Amul','Hersheys','Nescafe','Dark Fantasy','Milky Mist','Horlicks','Cream Bell','Haldiram'],[14,11,11,10,8,7,3,3,2,1,1,1,1,1],'Category Brand Presence',[orange,teal,sky,yellow,purple,green,red,pink,slate,darkBlue,blue,green,orange,teal]);
+verticalBarChart('reasonChart',['Product / Stock Not Available','Salesman Not Coming','Supply Very Low'],[16,8,1],'Reason Count',[red,orange,blue]);
+verticalBarChart('competitionAbsentChart',['Pepsi','7Up','Sprite','Slice','Bovonto','Sting','Maaza','Mirinda','Coca Cola','Campa'],[15,12,9,9,8,7,7,7,6,5],'Brand Count',[blue,green,teal,orange,purple,red,sky,pink,slate,darkBlue]);
+verticalBarChart('categoryAbsentChart',['Maaza','Slice','Boost','Frooti','Smoothie','Horlicks','Milky Mist','B Nat','Hersheys','Winkin','Minute Maid','Nescafe','Amul'],[9,6,4,4,3,2,2,2,1,1,1,1,1],'Category Competition',[yellow,purple,green,orange,teal,blue,sky,red,pink,slate,darkBlue,orange,green]);
+
+/* Sheet photo fetch */
+const SHEET_ID="1YnwUraKSJ_Bw7CVynjkc0SJF4D3KHAwMYvAUzi3Vn58";
+const GID="0";
+const SHEET_CSV_URL=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${GID}`;
+let rawData=[],filteredData=[];
+
+function safeText(value){return value===null||value===undefined?"":String(value).trim();}
+function escapeHtml(value){return safeText(value).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");}
+function parseCSV(text){
+const rows=[];let row=[],value="",insideQuotes=false;
+for(let i=0;i<text.length;i++){
+const char=text[i],next=text[i+1];
+if(char==='"'&&insideQuotes&&next==='"'){value+='"';i++;}
+else if(char==='"'){insideQuotes=!insideQuotes;}
+else if(char===","&&!insideQuotes){row.push(value);value="";}
+else if((char==="\n"||char==="\r")&&!insideQuotes){if(value||row.length){row.push(value);rows.push(row);row=[];value="";}}
+else{value+=char;}
+}
+if(value||row.length){row.push(value);rows.push(row);}
+const headers=rows.shift().map(h=>safeText(h));
+return rows.map(r=>{const obj={};headers.forEach((h,i)=>obj[h]=safeText(r[i]));return obj;});
+}
+function getField(row,names){for(const name of names){if(row[name]!==undefined&&safeText(row[name])!=="")return row[name];}return "";}
+function getCavinsPresentValue(row){return safeText(getField(row,["Cavins_Brand_Present_Inside_Fridge","Cavins_Brands_Present_Inside_Fridge","Cavins Present","Cavins_Present","Cavin’s Present","Cavins Brand Present Inside Fridge","Cavins Brands Present Inside Fridge"]));}
+function convertToImageUrl(url){
+url=safeText(url);if(!url)return "";
+let match=url.match(/\/d\/([a-zA-Z0-9_-]+)/);if(match&&match[1])return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1600`;
+match=url.match(/[?&]id=([a-zA-Z0-9_-]+)/);if(match&&match[1])return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1600`;
+match=url.match(/open\?id=([a-zA-Z0-9_-]+)/);if(match&&match[1])return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1600`;
+return url;
+}
+async function loadData(){
+const loader=document.getElementById("loader"),app=document.getElementById("app");
+try{
+const response=await fetch(SHEET_CSV_URL);
+const csvText=await response.text();
+rawData=parseCSV(csvText);
+filteredData=[...rawData];
+populateTownFilter();
+loader.style.display="none";
+app.style.display="block";
+renderGallery();
+}catch(error){
+loader.innerHTML=`Failed to load Google Sheet data.<br><br><span style="color:#b91c1c;">Make sure the sheet is public/published.</span>`;
+}
+}
+function populateTownFilter(){
+const townFilter=document.getElementById("townFilter");
+townFilter.innerHTML=`<option value="">All Towns</option>`;
+const towns=[...new Set(rawData.map(r=>safeText(getField(r,["Town","TOWN","town"]))).filter(Boolean))].sort();
+towns.forEach(town=>{const opt=document.createElement("option");opt.value=town.toLowerCase();opt.textContent=town;townFilter.appendChild(opt);});
+}
+function applyFilters(){
+const cavins=safeText(document.getElementById("cavinsFilter").value).toLowerCase();
+const town=safeText(document.getElementById("townFilter").value).toLowerCase();
+filteredData=rawData.filter(row=>{
+const cavinsValue=getCavinsPresentValue(row).toLowerCase();
+const townValue=safeText(getField(row,["Town","TOWN","town"])).toLowerCase();
+let cavinsMatch=true;
+if(cavins==="yes")cavinsMatch=cavinsValue==="yes"||cavinsValue==="present"||cavinsValue==="available";
+if(cavins==="no")cavinsMatch=cavinsValue==="no"||cavinsValue==="not present"||cavinsValue==="not available";
+return cavinsMatch&&(!town||townValue===town);
+});
+renderGallery();
+}
+function resetFilters(){document.getElementById("cavinsFilter").value="";document.getElementById("townFilter").value="";filteredData=[...rawData];renderGallery();}
+function renderGallery(){
+const gallery=document.getElementById("gallery");
+if(!filteredData.length){gallery.innerHTML=`<div class="section">No outlets found for selected filters.</div>`;return;}
+gallery.innerHTML=filteredData.map(row=>createPhotoCard(row)).join("");
+}
+function createPhotoCard(row){
+const outletType=safeText(getField(row,["Outlet_Type","Outlet Type","Outlet type"]));
+const rtrCode=safeText(getField(row,["Rtr_Code","RTR Code","Rtr Code","RTR_Code"]));
+const outletName=safeText(getField(row,["Name_of_Outlet","Name of Outlet","Outlet Name"]));
+const town=safeText(getField(row,["Town","TOWN","town"]));
+const rawImageUrl=safeText(getField(row,["VC_Cooler_Photo_Link","VC Cooler Photo Link","Photo","photo","Image","Image Link","VC Cooler Image","VC_Cooler_Image"]));
+const imageUrl=convertToImageUrl(rawImageUrl);
+const cavins=getCavinsPresentValue(row);
+const c=cavins.toLowerCase();
+let tagClass="na";
+if(c==="yes"||c==="present"||c==="available")tagClass="";
+if(c==="no"||c==="not present"||c==="not available")tagClass="no";
+return `
+<div class="photo-card">
+<div class="image-wrap" ${imageUrl?`onclick="openImageModal('${escapeHtml(rawImageUrl)}')"`:""}>
+<div class="cavins-tag ${tagClass}">CAVIN'S: ${escapeHtml(cavins||"NA")}</div>
+${imageUrl?`<img src="${escapeHtml(imageUrl)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='https://via.placeholder.com/1000x700/e5e7eb/475569?text=Image+Not+Available';">`:`<div class="no-image">Image not available</div>`}
+</div>
+<div class="info-side">
+<div class="outlet-title">${escapeHtml(outletName||"Outlet")}</div>
+<div class="info-grid">
+<div class="info-box"><strong>Outlet Type</strong>${escapeHtml(outletType)||"-"}</div>
+<div class="info-box"><strong>RTR Code</strong>${escapeHtml(rtrCode)||"-"}</div>
+<div class="info-box"><strong>Name of Outlet</strong>${escapeHtml(outletName)||"-"}</div>
+<div class="info-box"><strong>Town</strong>${escapeHtml(town)||"-"}</div>
+</div>
+</div>
+</div>`;
+}
+function openImageModal(src){document.getElementById("modalImage").src=convertToImageUrl(src);document.getElementById("imageModal").classList.add("active");}
+function closeImageModal(){document.getElementById("imageModal").classList.remove("active");document.getElementById("modalImage").src="";}
+document.getElementById("imageModal").addEventListener("click",e=>{if(e.target.id==="imageModal")closeImageModal();});
+loadData();
+</script>
+
+</body>
+</html>
