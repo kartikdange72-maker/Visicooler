@@ -189,10 +189,10 @@ select,.btn{border:1px solid #cbd5e1;border-radius:999px;padding:11px 14px;font-
   <b>Ans:</b> Among the <b>62 Cavin’s-present outlets</b>, <b>24 outlets had below 3 facings</b>, <b>23 outlets had 3–5 facings</b>, <b>13 outlets had 6–9 facings</b>, and only <b>2 outlets had above 10 facings</b>.</p>
 
   <p><b>Q3. How was Cavin’s rack placement?</b><br>
-  <b>Ans:</b> Cavin’s placement was highest on <b>Rack 1 with 19 outlets</b>, followed by <b>Rack 2 with 16 outlets</b>, <b>Rack 3 with 12 outlets</b>, and <b>Rack 4 with 8 outlets</b>. Multi-rack placement was limited: <b>Rack 1,2 had 3 outlets</b>, <b>Rack 1,3 had 1 outlet</b>, <b>Rack 1,3,4 had 1 outlet</b>, and <b>Rack 2,4 had 1 outlet</b>.</p>
+  <b>Ans:</b> Cavin’s rack placement has been counted rack-wise. If Cavin’s was present on multiple racks such as Rack 1,2, the count has been added to both Rack 1 and Rack 2 instead of creating a separate Rack 1,2 bucket. After this correction, Cavin’s placement is highest on <b>Rack 1 with 24 counts</b>, followed by <b>Rack 2 with 20 counts</b>, <b>Rack 3 with 14 counts</b>, <b>Rack 4 with 10 counts</b>, and <b>Rack 5 with 1 count</b>.</p>
 
   <p><b>Q4. What is the overall conclusion?</b><br>
-  <b>Ans:</b> Cavin’s was present in <b>62 cooler outlets</b>, but visibility strength was mixed. A large share of outlets had lower facing depth, with <b>24 outlets below 3 facings</b>. Rack placement was concentrated mainly on single racks, especially <b>Rack 1 and Rack 2</b>, while multi-rack visibility was seen only in a few outlets.</p>
+  <b>Ans:</b> Cavin’s was present in <b>62 cooler outlets</b>, but visibility strength was mixed. A large share of outlets had lower facing depth, with <b>24 outlets below 3 facings</b>. Rack visibility is now counted across actual shelves, showing strongest presence on <b>Rack 1 and Rack 2</b>, while deeper rack visibility remains weaker.</p>
 </div>
 
 <div class="section">
@@ -242,6 +242,7 @@ select,.btn{border:1px solid #cbd5e1;border-radius:999px;padding:11px 14px;font-
 <li>Coke has the largest cooler ownership count at <b>23</b>.</li>
 <li>Pepsi follows with <b>17</b> coolers.</li>
 <li>Western, 7Up and Campa form the next major block.</li>
+<li>Cavin’s fridge is present in <b>1</b> shop.</li>
 <li>This means Cavin’s visibility depends heavily on winning space inside competitor-controlled coolers.</li>
 </ul>
 </div>
@@ -289,8 +290,8 @@ select,.btn{border:1px solid #cbd5e1;border-radius:999px;padding:11px 14px;font-
 <div class="info-panel">
 <h3>Reading</h3>
 <ul>
-<li>Product / stock not available is the largest reason with <b>16</b> cases.</li>
-<li>Salesman not coming is the second issue with <b>8</b> cases.</li>
+<li>No timely supply / out of stock is the largest reason with <b>16</b> cases.</li>
+<li>Salesman irregular is the second issue with <b>8</b> cases.</li>
 <li>This is primarily an execution and supply issue.</li>
 </ul>
 </div>
@@ -392,18 +393,18 @@ smallTownChart('pondicherryFacingChart',['3-5','6-9','Above 10','Below 3'],[13,8
 smallTownChart('salemFacingChart',['3-5','6-9','Above 10','Below 3'],[1,0,0,0],[orange,blue,green,red]);
 
 const rackData={
-'Chennai':{'1':1,'2':2,'3':2,'4':1,'5':0,'1,2':0,'1,3':0,'1,3,4':0,'2,4':1},
-'Coimbatore':{'1':5,'2':4,'3':3,'4':3,'5':1,'1,2':0,'1,3':0,'1,3,4':1,'2,4':0},
-'Madurai':{'1':3,'2':3,'3':1,'4':1,'5':0,'1,2':0,'1,3':0,'1,3,4':0,'2,4':0},
-'Pondicherry':{'1':10,'2':7,'3':6,'4':3,'5':0,'1,2':2,'1,3':1,'1,3,4':0,'2,4':0},
-'Salem':{'1':0,'2':0,'3':0,'4':0,'5':0,'1,2':1,'1,3':0,'1,3,4':0,'2,4':0}
+'Chennai':{'1':1,'2':3,'3':2,'4':2,'5':0},
+'Coimbatore':{'1':6,'2':4,'3':4,'4':4,'5':1},
+'Madurai':{'1':3,'2':3,'3':1,'4':1,'5':0},
+'Pondicherry':{'1':13,'2':9,'3':7,'4':3,'5':0},
+'Salem':{'1':1,'2':1,'3':0,'4':0,'5':0}
 };
 
 function renderCoolers(){
 const container=document.getElementById('coolerRackGrid');
 container.innerHTML=Object.entries(rackData).map(([town,data])=>{
 const shelves=Object.entries(data).map(([rack,count])=>`
-<div class="shelf ${count===0?'zero':''} ${rack.includes(',')?'multi':''}">
+<div class="shelf ${count===0?'zero':''}">
 <span class="shelf-label">Rack ${rack}</span>
 <span class="shelf-count">${count}</span>
 </div>`).join('');
@@ -415,7 +416,7 @@ renderCoolers();
 verticalBarChart('companyChart',['Coke','Pepsi','Western','7Up','Campa','Sprite','Blue Star','Frigoglass','Others'],[23,17,14,11,11,8,3,2,10],'Fridge Company Count',[red,blue,slate,green,orange,sky,purple,teal,pink]);
 verticalBarChart('competitionPresentChart',['7Up','Coca Cola','Slice','Maaza','Pepsi','Bovonto','Sprite','Smoodh','Fanta','Cavin’s'],[21,17,16,13,13,12,12,11,9,9],'Brand Count',[green,red,orange,sky,blue,purple,teal,pink,slate,darkBlue]);
 verticalBarChart('categoryPresentChart',['Frooti','Smoothie','Winkin','Maaza','Slice','Boost','Amul','Hersheys','Nescafe','Dark Fantasy','Milky Mist','Horlicks','Cream Bell','Haldiram'],[14,11,11,10,8,7,3,3,2,1,1,1,1,1],'Category Brand Presence',[orange,teal,sky,yellow,purple,green,red,pink,slate,darkBlue,blue,green,orange,teal]);
-verticalBarChart('reasonChart',['Product / Stock Not Available','Salesman Not Coming','Supply Very Low'],[16,8,1],'Reason Count',[red,orange,blue]);
+verticalBarChart('reasonChart',['No Timely Supply / Out of Stock','Salesman Irregular','Supply Very Low'],[16,8,1],'Reason Count',[red,orange,blue]);
 verticalBarChart('competitionAbsentChart',['Pepsi','7Up','Sprite','Slice','Bovonto','Sting','Maaza','Mirinda','Coca Cola','Campa'],[15,12,9,9,8,7,7,7,6,5],'Brand Count',[blue,green,teal,orange,purple,red,sky,pink,slate,darkBlue]);
 verticalBarChart('categoryAbsentChart',['Maaza','Slice','Boost','Frooti','Smoothie','Horlicks','Milky Mist','B Nat','Hersheys','Winkin','Minute Maid','Nescafe','Amul'],[9,6,4,4,3,2,2,2,1,1,1,1,1],'Category Competition',[yellow,purple,green,orange,teal,blue,sky,red,pink,slate,darkBlue,orange,green]);
 
